@@ -20,10 +20,10 @@ def hotel_search(place, checkin, checkout):
     url = "https://app.rakuten.co.jp/services/api/Travel/VacantHotelSearch/20170426"
     params = {'applicationId': '1056403951911589369',
               'formatVersion': '2',
-              'checkinDate': 'checkin',
-              'checkoutDate': 'checkout',
-              'latitude': 'latitude',
-              'longitude': 'longitude',
+              'checkinDate': checkin,
+              'checkoutDate': checkout,
+              'latitude': latitude,
+              'longitude': longitude,
               'searchRadius': '3',
               'datumType': '1',
               'hits': '10'}
@@ -51,28 +51,26 @@ def hotel_search(place, checkin, checkout):
         return "API接続中に何らかのエラーが発生しました"
 
 def extract_words(str):
-    place_search = re.search('「(.+?)」', str)
-    time_search = re.search(r'\d{4}/\d{1,2}/\d{1,2}', str)
-    period_search = re.search('\D\d{1,2}泊', str)
+   place_search = re.search('「(.+?)」', str)
+   time_search = re.search(r'\d{4}/\d{1,2}/\d{1,2}', str)
+   period_search = re.search('\D(\d{1,2})泊', str)
+   error_msg = []
+   if place_search is None:
+       error_msg.append("場所が入力されていません。 鍵括弧「」内に場所を入力してください。 ")
+   if time_search is None:
+       error_msg.append("チェックイン日が入力されていません。 XXXX/XX/XXの形式で入力してください。 ")
+   if period_search is None:
+       error_msg.append("宿泊日数が入力されていません。 ○○泊の形式で泊をつけて、半角数字（最大二桁）で入力してください。 ")
+   if error_msg:
+       error_msg = "\n".join(error_msg)
+       return error_msg
+   place = place_search.group(1)
+   time = time_search.group()
+   period = period_search.group(1)
+   period = int(period)
 
-    error_msg = []
-    if place_search is None:
-        error_msg.append("場所が入力されていません。 鍵括弧「」内に場所を入力してください。 ")
-    if time_search is None:
-        error_msg.append("チェックイン日が入力されていません。 XXXX/XX/XXの形式で入力してください。 ")
-    if period_search is None:
-        error_msg.append("宿泊日数が入力されていません。 ○○泊の形式で泊をつけて、半角数字（最大二桁）で入力してください。 ")
-    if error_msg:
-        error_msg = "\n".join(error_msg)
-        return error_msg
-
-    place = place_search.group(1)
-    time = time_search.group()
-    period = period_search.group(1)
-    period = int(period)
-
-    checkin = datetime.datetime.strptime(time, '%Y/%m/%d')
-    checkout = checkin + datetime.timedelta(days=period)
-    checkin = checkin.strftime("%Y-%m-%d")
-    checkout = checkout.strftime("%Y-%m-%d")
-    return place, checkin, checkout
+   checkin = datetime.datetime.strptime(time, '%Y/%m/%d')
+   checkout = checkin + datetime.timedelta(days=period)
+   checkin = checkin.strftime("%Y-%m-%d")
+   checkout = checkout.strftime("%Y-%m-%d")
+   return place, checkin, checkout
