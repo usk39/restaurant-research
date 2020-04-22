@@ -41,13 +41,13 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    push_text = event.message.text
-    results = hotel.extract_words(push_text)
-    if isinstance(results, tuple):
-        msg = hotel.hotel_search(*results)
-    else:
-        msg = results
-    line_bot_api.replay_message(event.replay_token, TextSendMessage(text=msg))
+   push_text = event.message.text
+   results = hotel.extract_words(push_text)
+   if isinstance(results, tuple):
+       msg = hotel.hotel_search(*results)
+   else:
+       msg = results
+   line_bot_api.reply_message(event.reply_token,TextSendMessage(text=msg))
 
 if __name__ == "__main__":
    port = int(os.getenv("PORT"))
